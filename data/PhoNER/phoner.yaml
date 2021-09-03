@@ -1,0 +1,28 @@
+
+test_df_path: ../data/PhoNER/test_word.csv
+train_df_path: ../data/PhoNER/train_word.csv
+val_df_path: ../data/PhoNER/val_word.csv
+
+num_tags: 20
+tag_names: [
+  "B-AGE", 
+  "B-DATE", 
+  "B-GENDER", 
+  "B-JOB", 
+  "B-LOCATION", 
+  "B-NAME", 
+  "B-ORGANIZATION", 
+  "B-PATIENT_ID", 
+  "B-SYMPTOM_AND_DISEASE", 
+  "B-TRANSPORTATION", 
+  "I-AGE", 
+  "I-DATE", 
+  "I-JOB", 
+  "I-LOCATION", 
+  "I-NAME", 
+  "I-ORGANIZATION", 
+  "I-PATIENT_ID", 
+  "I-SYMPTOM_AND_DISEASE", 
+  "I-TRANSPORTATION", 
+  "O", 
+]
