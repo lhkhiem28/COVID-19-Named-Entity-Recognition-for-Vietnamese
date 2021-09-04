@@ -81,3 +81,40 @@ def train_fn(
             torch.save(model.state_dict(), ckp_path)
 
     print("Finish-Best entity-micro-f1: {:.4f}".format(best_micro_f1))
+
+def test_fn(
+    test_loader, model, device, 
+):
+    model.to(device)
+
+    with torch.no_grad():
+        model.eval()
+        running_annos, running_preds = [], []
+        for sents, annos in tqdm.tqdm(test_loader):
+            masks = (sents != test_loader.dataset.tokenizer.pad_token_id).type(sents.type())
+            sents, masks = sents.to(device), masks.to(device)
+            annos = annos.view(-1).to(device)
+
+            outputs = model(sents, masks)
+            logits = outputs.logits.view(-1, outputs.logits.shape[-1])
+
+            annos, preds = list(annos.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
+            running_annos.extend(annos), running_preds.extend(preds)
+
+    test_micro_f1 = entity_f1_score(
+        np.array(running_annos), np.array(running_preds)
+        , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
+        , average="micro"
+    )
+    test_macro_f1 = entity_f1_score(
+        np.array(running_annos), np.array(running_preds)
+        , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
+        , average="macro"
+    )
+    test_classification_report = entity_classification_report(
+        np.array(running_annos), np.array(running_preds)
+        , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
+    )
+    print("{}-entity-micro-f1: {:.4f}".format("test", test_micro_f1))
+    print("{}-entity-macro-f1: {:.4f}".format("test", test_macro_f1))
+    print("test-classification-report:\n", test_classification_report)
