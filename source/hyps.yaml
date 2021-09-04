@@ -1,7 +1,7 @@
 
-device: "cpu"
+device: "cuda"
 num_workers: 4
 batch_size: 32
-model: "vinai/phobert-base"
+model: "vinai/phobert-large"
 lr: 5e-5
 epochs: 30
