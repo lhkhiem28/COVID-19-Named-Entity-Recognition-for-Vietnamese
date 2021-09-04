@@ -16,7 +16,15 @@ class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
 
         self.tokenizer = tokenizer
         self.max_length = 64
-        self.criterion_ignored_class = -100
+        self.criterion_ignored_la = -100
+        self.specials = {
+            "pad_token_id": self.tokenizer.pad_token_id, 
+            "cls_token_id": self.tokenizer.cls_token_id, 
+            "sep_token_id": self.tokenizer.sep_token_id, 
+            "pad_token_la": self.criterion_ignored_la, 
+            "cls_token_la": self.criterion_ignored_la, 
+            "sep_token_la": self.criterion_ignored_la, 
+        }
 
     def show_sent(self, idx):
         sent, anno = self.sents[idx], self.annos[idx]

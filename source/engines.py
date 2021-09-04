@@ -44,7 +44,7 @@ def train_fn(
         epoch_loss = running_loss/len(loaders["train"].dataset)
         epoch_micro_f1 = entity_f1_score(
             np.array(running_annos), np.array(running_preds)
-            , loaders["train"].dataset.criterion_ignored_class, loaders["train"].dataset.tag_names
+            , loaders["train"].dataset.criterion_ignored_la, loaders["train"].dataset.tag_names
             , average="micro"
         )
         print("{}-loss: {:.4f}".format("train", epoch_loss))
@@ -70,7 +70,7 @@ def train_fn(
         epoch_loss = running_loss/len(loaders["val"].dataset)
         epoch_micro_f1 = entity_f1_score(
             np.array(running_annos), np.array(running_preds)
-            , loaders["val"].dataset.criterion_ignored_class, loaders["val"].dataset.tag_names
+            , loaders["val"].dataset.criterion_ignored_la, loaders["val"].dataset.tag_names
             , average="micro"
         )
         print("{}-loss: {:.4f}".format("val", epoch_loss))
