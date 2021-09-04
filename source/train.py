@@ -12,39 +12,30 @@ warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_file", type=str)
-parser.add_argument("--model_name", type=str)
-parser.add_argument("--batch_size", type=int), parser.add_argument("--epochs", type=int)
+parser.add_argument("--hyps_file", type=str)
 args = parser.parse_args()
 
 data_file = yaml.load(open(args.data_file), Loader=yaml.FullLoader)
-
-device = torch.device("cuda")
-tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name, use_fast=False)
-model = transformers.RobertaForTokenClassification.from_pretrained(args.model_name, num_labels=data_file["num_tags"])
-criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=5e-5)
-
-train_df = pd.read_csv(data_file["train_df_path"])
-val_df = pd.read_csv(data_file["val_df_path"])
+hyps_file = yaml.load(open(args.hyps_file), Loader=yaml.FullLoader)
 
 train_loader = torch.utils.data.DataLoader(
     NamedEntityRecognitionDataset(
-        df=train_df, 
+        df=pd.read_csv(data_file["train_df_path"]), 
         tag_names=data_file["tag_names"], 
-        tokenizer=tokenizer, 
+        tokenizer=transformers.AutoTokenizer.from_pretrained(hyps_file["model"], use_fast=False), 
     ), 
-    num_workers=4, 
-    batch_size=args.batch_size, 
+    num_workers=hyps_file["num_workers"], 
+    batch_size=hyps_file["batch_size"], 
     shuffle=True, 
 )
 val_loader = torch.utils.data.DataLoader(
     NamedEntityRecognitionDataset(
-        df=val_df, 
+        df=pd.read_csv(data_file["val_df_path"]), 
         tag_names=data_file["tag_names"], 
-        tokenizer=tokenizer, 
+        tokenizer=transformers.AutoTokenizer.from_pretrained(hyps_file["model"], use_fast=False), 
     ), 
-    num_workers=4, 
-    batch_size=args.batch_size*2, 
+    num_workers=hyps_file["num_workers"], 
+    batch_size=hyps_file["batch_size"]*2, 
 )
 
 loaders = {
@@ -52,12 +43,13 @@ loaders = {
     "val": val_loader, 
 }
 
+model = transformers.RobertaForTokenClassification.from_pretrained(hyps_file["model"], num_labels=data_file["num_tags"])
+criterion = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=float(hyps_file["lr"]))
+
 train_fn(
-    loaders, 
-    model, 
-    criterion, 
-    optimizer, 
-    device=device, 
-    epochs=args.epochs, 
-    ckp_path="../ckps/{}.pt".format(args.model_name.split("/")[-1])
+    loaders, model, torch.device(hyps_file["device"]), 
+    criterion, optimizer, 
+    epochs=hyps_file["epochs"], 
+    ckp_path="../ckps/{}.pt".format(hyps_file["model"].split("/")[-1]), 
 )

@@ -12,31 +12,31 @@ class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
     ):
         self.df = df
         self.tag_names = tag_names
-        self.sentences, self.annotations = df.groupby("Sentence")["Word"].apply(list).values, df.groupby("Sentence")["Tag"].apply(list).values
+        self.sents, self.annos = df.groupby("Sentence")["Word"].apply(list).values, df.groupby("Sentence")["Tag"].apply(list).values
 
         self.tokenizer = tokenizer
         self.max_length = 64
         self.criterion_ignored_class = -100
 
-    def show_sentence(self, idx):
-        sentence, annotation = self.sentences[idx], self.annotations[idx]
-        for word, tag in zip(sentence, annotation):
+    def show_sent(self, idx):
+        sent, anno = self.sents[idx], self.annos[idx]
+        for word, tag in zip(sent, anno):
             print("{:>40}: {}".format(word, tag))
 
     def __len__(self):
-        dataset_len = len(self.sentences)
+        dataset_len = len(self.sents)
 
         return dataset_len
 
     def __getitem__(self, idx):
-        sentence, annotation = self.sentences[idx], self.annotations[idx]
-        sentence, annotation = tokenize(
+        sent, anno = self.sents[idx], self.annos[idx]
+        sent, anno = tokenize(
             self, 
-            sentence, annotation
+            sent, anno
         ).values()
-        sentence, annotation = pad_and_add_special_tokens(
+        sent, anno = pad_and_add_special_tokens(
             self, 
-            sentence, annotation
+            sent, anno
         ).values()
 
-        return np.array(sentence), np.array(annotation)
+        return np.array(sent), np.array(anno)

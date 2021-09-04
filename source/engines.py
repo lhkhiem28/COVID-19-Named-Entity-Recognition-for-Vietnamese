@@ -2,20 +2,16 @@
 import tqdm
 import numpy as np
 import torch
-from metrics import entity_f1_score, classification_report
+from metrics import *
 
 def train_fn(
-    loaders, 
-    model, 
-    criterion, 
-    optimizer, 
-    device, 
+    loaders, model, device, 
+    criterion, optimizer, 
     epochs, 
-    ckp_path
+    ckp_path, 
 ):
     print("Number of Epochs: {}\n".format(epochs))
-    best_f1_micro = 0.0
-    best_f1_macro = 0.0
+    best_micro_f1 = 0.0
 
     model.to(device)
     scaler = torch.cuda.amp.GradScaler()
@@ -23,111 +19,65 @@ def train_fn(
         print("epoch {:2}/{:2}".format(epoch, epochs) + "\n" + "-"*16)
 
         model.train()
-        running_annotations, running_predictions = [], []
-        for sentences, annotations in tqdm.tqdm(loaders["train"]):
-            attention_masks = (sentences != loaders["train"].dataset.tokenizer.pad_token_id).type(sentences.type())
-            sentences, attention_masks = sentences.to(device), attention_masks.to(device)
-            annotations = annotations.view(-1).to(device)
+        running_loss = 0.0
+        running_annos, running_preds = [], []
+        for sents, annos in tqdm.tqdm(loaders["train"]):
+            masks = (sents != loaders["train"].dataset.tokenizer.pad_token_id).type(sents.type())
+            sents, masks = sents.to(device), masks.to(device)
+            annos = annos.view(-1).to(device)
 
             optimizer.zero_grad()
 
             with torch.cuda.amp.autocast():
-                outputs = model(sentences, attention_masks)
+                outputs = model(sents, masks)
                 logits = outputs.logits.view(-1, outputs.logits.shape[-1])
-                loss = criterion(logits, annotations.long())
+                loss = criterion(logits, annos.long())
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
 
-            annotations, predictions = list(annotations.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
-            running_annotations.extend(annotations), running_predictions.extend(predictions)
+            running_loss = running_loss + loss.item()*sents.size(0)
+            annos, preds = list(annos.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
+            running_annos.extend(annos), running_preds.extend(preds)
 
-        epoch_f1_micro = entity_f1_score(
-            np.array(running_annotations), np.array(running_predictions)
+        epoch_loss = running_loss/len(loaders["train"].dataset)
+        epoch_micro_f1 = entity_f1_score(
+            np.array(running_annos), np.array(running_preds)
             , loaders["train"].dataset.criterion_ignored_class, loaders["train"].dataset.tag_names
             , average="micro"
         )
-        epoch_f1_macro = entity_f1_score(
-            np.array(running_annotations), np.array(running_predictions)
-            , loaders["train"].dataset.criterion_ignored_class, loaders["train"].dataset.tag_names
-            , average="macro"
-        )
-        print("{}-entity-f1-micro: {:.4f}".format("train", epoch_f1_micro))
-        print("{}-entity-f1-macro: {:.4f}".format("train", epoch_f1_macro))
+        print("{}-loss: {:.4f}".format("train", epoch_loss))
+        print("{}-entity-micro-f1: {:.4f}".format("train", epoch_micro_f1))
 
         with torch.no_grad():
             model.eval()
-            running_annotations, running_predictions = [], []
-            for sentences, annotations in tqdm.tqdm(loader):
-                attention_masks = (sentences != loader.dataset.tokenizer.pad_token_id).type(sentences.type())
-                sentences, attention_masks = sentences.to(device), attention_masks.to(device)
-                annotations = annotations.view(-1).to(device)
+            running_loss = 0.0
+            running_annos, running_preds = [], []
+            for sents, annos in tqdm.tqdm(loaders["val"]):
+                masks = (sents != loaders["val"].dataset.tokenizer.pad_token_id).type(sents.type())
+                sents, masks = sents.to(device), masks.to(device)
+                annos = annos.view(-1).to(device)
 
-                outputs = model(sentences, attention_masks)
+                outputs = model(sents, masks)
                 logits = outputs.logits.view(-1, outputs.logits.shape[-1])
-                loss = criterion(logits, annotations.long())
+                loss = criterion(logits, annos.long())
 
-                annotations, predictions = list(annotations.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
-                running_annotations.extend(annotations), running_predictions.extend(predictions)
+                running_loss = running_loss + loss.item()*sents.size(0)
+                annos, preds = list(annos.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
+                running_annos.extend(annos), running_preds.extend(preds)
 
-        epoch_f1_micro = entity_f1_score(
-            np.array(running_annotations), np.array(running_predictions)
-            , loader.dataset.criterion_ignored_class, loader.dataset.tag_names
+        epoch_loss = running_loss/len(loaders["val"].dataset)
+        epoch_micro_f1 = entity_f1_score(
+            np.array(running_annos), np.array(running_preds)
+            , loaders["val"].dataset.criterion_ignored_class, loaders["val"].dataset.tag_names
             , average="micro"
         )
-        epoch_f1_macro = entity_f1_score(
-            np.array(running_annotations), np.array(running_predictions)
-            , loader.dataset.criterion_ignored_class, loader.dataset.tag_names
-            , average="macro"
-        )
-        print("{}-entity-f1-micro: {:.4f}".format("val", epoch_f1_micro))
-        print("{}-entity-f1-macro: {:.4f}".format("val", epoch_f1_macro))
+        print("{}-loss: {:.4f}".format("val", epoch_loss))
+        print("{}-entity-micro-f1: {:.4f}".format("val", epoch_micro_f1))
 
-        if epoch_f1_micro > best_f1_micro:
-            best_f1_micro = epoch_f1_micro
-            best_f1_macro = epoch_f1_macro
+        if epoch_micro_f1 > best_micro_f1:
+            best_micro_f1 = epoch_micro_f1
             torch.save(model.state_dict(), ckp_path)
 
-    print("Finish-Best val-f1-micro: {:.4f}".format(best_f1_micro))
-    print("Finish-Best val-f1-macro: {:.4f}".format(best_f1_macro))
-
-def val_fn(
-    loader, 
-    model, 
-    device, 
-):
-    model.to(device)
-
-    with torch.no_grad():
-        model.eval()
-        running_annotations, running_predictions = [], []
-        for sentences, annotations in tqdm.tqdm(loader):
-            attention_masks = (sentences != loader.dataset.tokenizer.pad_token_id).type(sentences.type())
-            sentences, attention_masks = sentences.to(device), attention_masks.to(device)
-            annotations = annotations.view(-1).to(device)
-
-            outputs = model(sentences, attention_masks)
-            logits = outputs.logits.view(-1, outputs.logits.shape[-1])
-
-            annotations, predictions = list(annotations.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
-            running_annotations.extend(annotations), running_predictions.extend(predictions)
-
-    epoch_f1_micro = entity_f1_score(
-        np.array(running_annotations), np.array(running_predictions)
-        , loader.dataset.criterion_ignored_class, loader.dataset.tag_names
-        , average="micro"
-    )
-    epoch_f1_macro = entity_f1_score(
-        np.array(running_annotations), np.array(running_predictions)
-        , loader.dataset.criterion_ignored_class, loader.dataset.tag_names
-        , average="macro"
-    )
-    print("{}-entity-f1-micro: {:.4f}".format("test", epoch_f1_micro))
-    print("{}-entity-f1-macro: {:.4f}".format("test", epoch_f1_macro))
-    report = classification_report(
-        np.array(running_annotations), np.array(running_predictions)
-        , loader.dataset.criterion_ignored_class, loader.dataset.tag_names
-    )
-    print("classification-report:")
-    print(report)
+    print("Finish-Best entity-micro-f1: {:.4f}".format(best_micro_f1))

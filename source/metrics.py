@@ -3,33 +3,33 @@ from seqeval.scheme import IOB2
 from seqeval import metrics
 
 def entity_f1_score(
-    annotations, predictions
+    anno, pred
     , criterion_ignored_class, tag_names
     , average
 ):
-    active_indices = annotations != criterion_ignored_class
-    annotations, predictions = annotations[active_indices].tolist(), predictions[active_indices].tolist()
-    annotations, predictions = [tag_names[cls] for cls in annotations], [tag_names[cls] for cls in predictions]
+    active_indices = anno != criterion_ignored_class
+    anno, pred = anno[active_indices].tolist(), pred[active_indices].tolist()
+    anno, pred = [tag_names[cls] for cls in anno], [tag_names[cls] for cls in pred]
 
-    f1 = metrics.f1_score(
-        [annotations], [predictions]
+    f1_score = metrics.f1_score(
+        [anno], [pred]
         , mode="strict", scheme=IOB2
         , average=average
     )
 
-    return f1
+    return f1_score
 
-def classification_report(
-    annotations, predictions
+def entity_classification_report(
+    anno, pred
     , criterion_ignored_class, tag_names
 ):
-    active_indices = annotations != criterion_ignored_class
-    annotations, predictions = annotations[active_indices].tolist(), predictions[active_indices].tolist()
-    annotations, predictions = [tag_names[cls] for cls in annotations], [tag_names[cls] for cls in predictions]
+    active_indices = anno != criterion_ignored_class
+    anno, pred = anno[active_indices].tolist(), pred[active_indices].tolist()
+    anno, pred = [tag_names[cls] for cls in anno], [tag_names[cls] for cls in pred]
 
-    report = metrics.classification_report(
-        [annotations], [predictions]
+    classification_report = metrics.classification_report(
+        [anno], [pred]
         , mode="strict", scheme=IOB2
     )
 
-    return report
+    return classification_report
