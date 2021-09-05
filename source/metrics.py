@@ -30,6 +30,7 @@ def entity_classification_report(
     classification_report = metrics.classification_report(
         [anno], [pred]
         , mode="strict", scheme=IOB2
+        , digits=3
     )
 
     return classification_report
