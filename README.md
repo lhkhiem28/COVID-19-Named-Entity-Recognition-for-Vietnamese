@@ -1,6 +1,6 @@
 ## COVID-19-Named-Entity-Recognition-for-Vietnamese
 
-⚡ My replication of the paper [COVID-19 Named Entity Recognition for Vietnamese](https://arxiv.org/abs/2104.03879).
+⚡ My replication of the paper [COVID-19 Named Entity Recognition for Vietnamese](https://arxiv.org/abs/2104.03879).\
 🚀 My results are shown in the following table:
 > <img src="imgs/results.png" width="600" />
 
