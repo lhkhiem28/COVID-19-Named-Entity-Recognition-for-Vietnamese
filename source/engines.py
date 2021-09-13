@@ -12,6 +12,7 @@ def train_fn(
 ):
     print("Number of Epochs: {}\n".format(epochs))
     best_micro_f1 = 0.0
+    early_stopping_counter = 0
 
     model = model.to(device)
     model = torch.nn.DataParallel(model, device_ids=device_ids)
@@ -79,7 +80,14 @@ def train_fn(
 
         if epoch_micro_f1 > best_micro_f1:
             best_micro_f1 = epoch_micro_f1
+            early_stopping_counter = 0
             torch.save(model.module.state_dict(), ckp_path)
+        else:
+            early_stopping_counter += 1
+
+        if early_stopping_counter == 5:
+            print("Early Stopped !")
+            break
 
     print("Finish-Best entity-micro-f1: {:.4f}".format(best_micro_f1))
 
