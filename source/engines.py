@@ -5,7 +5,7 @@ import torch
 from metrics import *
 
 def train_fn(
-    loaders, model, device, 
+    loaders, model, device, device_ids, 
     criterion, optimizer, 
     epochs, 
     ckp_path, 
@@ -13,7 +13,8 @@ def train_fn(
     print("Number of Epochs: {}\n".format(epochs))
     best_micro_f1 = 0.0
 
-    model.to(device)
+    model = model.to(device)
+    model = torch.nn.DataParallel(model, device_ids=device_ids)
     scaler = torch.cuda.amp.GradScaler()
     for epoch in range(1, epochs + 1):
         print("epoch {:2}/{:2}".format(epoch, epochs) + "\n" + "-"*16)
@@ -78,14 +79,14 @@ def train_fn(
 
         if epoch_micro_f1 > best_micro_f1:
             best_micro_f1 = epoch_micro_f1
-            torch.save(model.state_dict(), ckp_path)
+            torch.save(model.module.state_dict(), ckp_path)
 
     print("Finish-Best entity-micro-f1: {:.4f}".format(best_micro_f1))
 
 def test_fn(
     test_loader, model, device, 
 ):
-    model.to(device)
+    model = model.to(device)
 
     with torch.no_grad():
         model.eval()

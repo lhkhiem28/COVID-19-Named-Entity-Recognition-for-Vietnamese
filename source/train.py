@@ -48,7 +48,7 @@ criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=float(hyps_file["lr"]))
 
 train_fn(
-    loaders, model, torch.device(hyps_file["device"]), 
+    loaders, model, torch.device(hyps_file["device"]), hyps_file["device_ids"], 
     criterion, optimizer, 
     epochs=hyps_file["epochs"], 
     ckp_path="../ckps/{}.pt".format(hyps_file["model"].split("/")[-1]), 
