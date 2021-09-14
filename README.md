@@ -6,7 +6,7 @@ My trained weights are available at [here](https://drive.google.com/drive/folder
 > <img src="imgs/results.png" width="600" />
 
 ## 🚀 **Quick Start**
-How to train on your custom data? Very easy!
+How to train on your custom data? Very easy!!!
 
 ### **1. Create dataset.yaml**
 [data/PhoNER/phoner.yaml](data/PhoNER/phoner.yaml), shown below, is the dataset config file that defines:
