@@ -58,6 +58,7 @@ device_ids: [0, 1]
 num_workers: 4
 batch_size: 32
 model: "vinai/phobert-base"
+use_crf: True
 lr: 5e-5
 epochs: 30
 ```

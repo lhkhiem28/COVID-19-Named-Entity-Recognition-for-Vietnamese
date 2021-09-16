@@ -33,7 +33,17 @@ def train_fn(
             with torch.cuda.amp.autocast():
                 outputs = model(sents, masks)
                 logits = outputs.logits
-                loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
+                if "CRF" in str(criterion.__init__):
+                    loss = 0
+                    for i in range(sents.size(0)):
+                        seq_logits, seq_annos = logits[i][annos[i] != loaders["train"].dataset.criterion_ignored_la].unsqueeze(0), annos[i][annos[i] != loaders["train"].dataset.criterion_ignored_la].unsqueeze(0)
+                        loss -= criterion(
+                            seq_logits, seq_annos.long()
+                            , reduction="token_mean"
+                        )
+                    loss /= sents.size(0)
+                else:
+                    loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -63,7 +73,17 @@ def train_fn(
 
                 outputs = model(sents, masks)
                 logits = outputs.logits
-                loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
+                if "CRF" in str(criterion.__init__):
+                    loss = 0
+                    for i in range(sents.size(0)):
+                        seq_logits, seq_annos = logits[i][annos[i] != loaders["train"].dataset.criterion_ignored_la].unsqueeze(0), annos[i][annos[i] != loaders["train"].dataset.criterion_ignored_la].unsqueeze(0)
+                        loss -= criterion(
+                            seq_logits, seq_annos.long()
+                            , reduction="token_mean"
+                        )
+                    loss /= sents.size(0)
+                else:
+                    loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
 
                 running_loss = running_loss + loss.item()*sents.size(0)
                 annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))

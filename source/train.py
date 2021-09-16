@@ -2,7 +2,7 @@
 import argparse
 import yaml
 import pandas as pd
-import torch
+import torch, torchcrf
 import transformers
 from data import NamedEntityRecognitionDataset
 from engines import train_fn
@@ -44,7 +44,10 @@ loaders = {
 }
 
 model = transformers.RobertaForTokenClassification.from_pretrained(hyps_file["model"], num_labels=data_file["num_tags"])
-criterion = torch.nn.CrossEntropyLoss()
+if hyps_file["use_crf"]:
+    criterion = torchcrf.CRF(num_tags=data_file["num_tags"], batch_first=True)
+else:
+    criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=float(hyps_file["lr"]))
 
 train_fn(
