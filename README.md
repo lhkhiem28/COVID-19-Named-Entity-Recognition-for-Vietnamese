@@ -5,6 +5,9 @@ A Pytorch replication of the paper [COVID-19 Named Entity Recognition for Vietna
 My trained weights are available at [here](https://drive.google.com/drive/folders/1oN2Mr44jwjNKxqUE2t2UgTlXWfXf6ojy?usp=sharing) and the results are shown in the following table:
 > <img src="imgs/results.png" width="600" />
 
+## 🆕 **Updates**
+- **Sep/2021**: Add training with CRF layer mode (BERT-CRF).
+
 ## 🚀 **Quick Start**
 How to train on your custom data? Very easy!!!
 
