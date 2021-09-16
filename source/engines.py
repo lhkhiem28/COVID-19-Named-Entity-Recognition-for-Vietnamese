@@ -26,21 +26,21 @@ def train_fn(
         for sents, annos in tqdm.tqdm(loaders["train"]):
             masks = (sents != loaders["train"].dataset.tokenizer.pad_token_id).type(sents.type())
             sents, masks = sents.to(device), masks.to(device)
-            annos = annos.view(-1).to(device)
+            annos = annos.to(device)
 
             optimizer.zero_grad()
 
             with torch.cuda.amp.autocast():
                 outputs = model(sents, masks)
-                logits = outputs.logits.view(-1, outputs.logits.shape[-1])
-                loss = criterion(logits, annos.long())
+                logits = outputs.logits
+                loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
 
             running_loss = running_loss + loss.item()*sents.size(0)
-            annos, preds = list(annos.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
+            annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))
             running_annos.extend(annos), running_preds.extend(preds)
 
         epoch_loss = running_loss/len(loaders["train"].dataset)
@@ -59,14 +59,14 @@ def train_fn(
             for sents, annos in tqdm.tqdm(loaders["val"]):
                 masks = (sents != loaders["val"].dataset.tokenizer.pad_token_id).type(sents.type())
                 sents, masks = sents.to(device), masks.to(device)
-                annos = annos.view(-1).to(device)
+                annos = annos.to(device)
 
                 outputs = model(sents, masks)
-                logits = outputs.logits.view(-1, outputs.logits.shape[-1])
-                loss = criterion(logits, annos.long())
+                logits = outputs.logits
+                loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
 
                 running_loss = running_loss + loss.item()*sents.size(0)
-                annos, preds = list(annos.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
+                annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))
                 running_annos.extend(annos), running_preds.extend(preds)
 
         epoch_loss = running_loss/len(loaders["val"].dataset)
@@ -102,12 +102,12 @@ def test_fn(
         for sents, annos in tqdm.tqdm(test_loader):
             masks = (sents != test_loader.dataset.tokenizer.pad_token_id).type(sents.type())
             sents, masks = sents.to(device), masks.to(device)
-            annos = annos.view(-1).to(device)
+            annos = annos.to(device)
 
             outputs = model(sents, masks)
-            logits = outputs.logits.view(-1, outputs.logits.shape[-1])
+            logits = outputs.logits
 
-            annos, preds = list(annos.detach().cpu().numpy()), list(np.argmax(logits.detach().cpu().numpy(), axis=1))
+            annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))
             running_annos.extend(annos), running_preds.extend(preds)
 
     test_micro_f1 = entity_f1_score(
