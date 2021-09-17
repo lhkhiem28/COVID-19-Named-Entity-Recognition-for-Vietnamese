@@ -49,8 +49,8 @@ tag_names: [
 
 ### **2. Organize annotations**
 Organize your `train` / `val` / `test` annotation files to the dataframe format, with one `*.csv` file per set. The `*.csv` file specifications are:
-- One pair (`word`, `tag`) per row.
-- Words belonging to the same sentence have the same `sentence_id`.
+- One data sample per row.
+- Each data sample includes `sentence_id`, `sentence`, `annotation`.
 
 ### **3. Put hyperparameters in the config file**
 [source/hyps.yaml](source/hyps.yaml), shown below, is the hyperparameters config file:
