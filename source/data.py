@@ -12,7 +12,7 @@ class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
     ):
         self.df = df
         self.tag_names = tag_names
-        self.sents, self.annos = [Words.split() for Words in list(df["sent"].values)], [Tags.split() for Tags in list(df["anno"].values)]
+        self.sents, self.annos = [words.split() for words in list(df["sent"].values)], [tags.split() for tags in list(df["anno"].values)]
 
         self.tokenizer = tokenizer
         self.max_length = 64
@@ -28,6 +28,7 @@ class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
 
     def show_sent(self, idx):
         sent, anno = self.sents[idx], self.annos[idx]
+        print("{:>40}: {}".format("word", "tag"))
         for word, tag in zip(sent, anno):
             print("{:>40}: {}".format(word, tag))
 
