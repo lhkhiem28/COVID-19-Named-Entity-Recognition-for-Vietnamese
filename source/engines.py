@@ -43,14 +43,14 @@ def train_fn(
                         )
                     loss /= sents.size(0)
                 else:
-                    loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
+                    loss = criterion(logits.view(-1, logits.shape[-1]), annos.view(-1).long())
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
 
             running_loss = running_loss + loss.item()*sents.size(0)
-            annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))
+            annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, logits.shape[-1]).detach().cpu().numpy(), axis=1))
             running_annos.extend(annos), running_preds.extend(preds)
 
         epoch_loss = running_loss/len(loaders["train"].dataset)
@@ -83,10 +83,10 @@ def train_fn(
                         )
                     loss /= sents.size(0)
                 else:
-                    loss = criterion(logits.view(-1, outputs.logits.shape[-1]), annos.view(-1).long())
+                    loss = criterion(logits.view(-1, logits.shape[-1]), annos.view(-1).long())
 
                 running_loss = running_loss + loss.item()*sents.size(0)
-                annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))
+                annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, logits.shape[-1]).detach().cpu().numpy(), axis=1))
                 running_annos.extend(annos), running_preds.extend(preds)
 
         epoch_loss = running_loss/len(loaders["val"].dataset)
@@ -127,7 +127,7 @@ def test_fn(
             outputs = model(sents, masks)
             logits = outputs.logits
 
-            annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, outputs.logits.shape[-1]).detach().cpu().numpy(), axis=1))
+            annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, logits.shape[-1]).detach().cpu().numpy(), axis=1))
             running_annos.extend(annos), running_preds.extend(preds)
 
     test_micro_f1 = entity_f1_score(
