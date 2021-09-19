@@ -1,5 +1,5 @@
 
-from seqeval.scheme import IOB2
+from seqeval import scheme
 from seqeval import metrics
 
 def entity_f1_score(
@@ -13,7 +13,7 @@ def entity_f1_score(
 
     f1_score = metrics.f1_score(
         [anno], [pred]
-        , mode="strict", scheme=IOB2
+        , mode="strict", scheme=scheme.IOB2
         , average=average
     )
 
@@ -29,7 +29,7 @@ def entity_classification_report(
 
     classification_report = metrics.classification_report(
         [anno], [pred]
-        , mode="strict", scheme=IOB2
+        , mode="strict", scheme=scheme.IOB2
         , digits=3
     )
 

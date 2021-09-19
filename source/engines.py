@@ -6,7 +6,8 @@ from metrics import *
 
 def train_fn(
     loaders, model, device, device_ids, 
-    criterion, optimizer, 
+    criterion, 
+    optimizer, 
     epochs, 
     ckp_path, 
 ):
@@ -59,8 +60,8 @@ def train_fn(
             , loaders["train"].dataset.criterion_ignored_la, loaders["train"].dataset.tag_names
             , average="micro"
         )
-        print("{}-loss: {:.4f}".format("train", epoch_loss))
-        print("{}-entity-micro-f1: {:.4f}".format("train", epoch_micro_f1))
+        print("{} - loss: {:.4f}".format("train", epoch_loss))
+        print("{} - entity-micro-f1: {:.4f}".format("train", epoch_micro_f1))
 
         with torch.no_grad():
             model.eval()
@@ -95,8 +96,8 @@ def train_fn(
             , loaders["val"].dataset.criterion_ignored_la, loaders["val"].dataset.tag_names
             , average="micro"
         )
-        print("{}-loss: {:.4f}".format("val", epoch_loss))
-        print("{}-entity-micro-f1: {:.4f}".format("val", epoch_micro_f1))
+        print("{} - loss: {:.4f}".format("val", epoch_loss))
+        print("{} - entity-micro-f1: {:.4f}".format("val", epoch_micro_f1))
 
         if epoch_micro_f1 > best_micro_f1:
             best_micro_f1 = epoch_micro_f1
@@ -109,7 +110,7 @@ def train_fn(
             print("Early Stopped !")
             break
 
-    print("Finish-Best entity-micro-f1: {:.4f}".format(best_micro_f1))
+    print("Finish - Best entity-micro-f1: {:.4f}".format(best_micro_f1))
 
 def test_fn(
     test_loader, model, device, 
@@ -144,6 +145,6 @@ def test_fn(
         np.array(running_annos), np.array(running_preds)
         , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
     )
-    print("{}-entity-micro-f1: {:.4f}".format("test", test_micro_f1))
-    print("{}-entity-macro-f1: {:.4f}".format("test", test_macro_f1))
-    print("test-classification-report:\n", test_classification_report)
+    print("{} - entity-micro-f1: {:.4f}".format("test", test_micro_f1))
+    print("{} - entity-macro-f1: {:.4f}".format("test", test_macro_f1))
+    print("test - classification-report:\n", test_classification_report)

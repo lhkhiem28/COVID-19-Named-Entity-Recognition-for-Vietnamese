@@ -1,6 +1,5 @@
 
 from keras.preprocessing.sequence import pad_sequences as pad
-from viet_text_tools import normalize_diacritics
 
 def tokenize(
     dataset, 
@@ -11,8 +10,7 @@ def tokenize(
     tokenized_anno = []
 
     for i, word in enumerate(sent):
-        tokenized_word = dataset.tokenizer.convert_tokens_to_ids(dataset.tokenizer.tokenize(normalize_diacritics(word, new_style=True)))
-
+        tokenized_word = dataset.tokenizer.convert_tokens_to_ids(dataset.tokenizer.tokenize(word))
         tokenized_sent.extend(tokenized_word)
         tokenized_anno.extend([dataset.tag_names.index(anno[i])] + [dataset.criterion_ignored_la]*(len(tokenized_word) - 1))
 

@@ -1,6 +1,7 @@
 
 import numpy as np
 import torch
+import viet_text_tools as vtts
 from utils import *
 
 class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
@@ -11,6 +12,7 @@ class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
         tokenizer, 
     ):
         self.df = df
+        self.df["sent"] = self.df["sent"].apply(vtts.normalize_diacritics)
         self.tag_names = tag_names
         self.sents, self.annos = [words.split() for words in list(df["sent"].values)], [tags.split() for tags in list(df["anno"].values)]
 
