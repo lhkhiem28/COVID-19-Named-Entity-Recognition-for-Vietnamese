@@ -2,7 +2,7 @@
 import numpy as np
 import torch
 import viet_text_tools as vtts
-from utils import *
+from utils.preprocessing import *
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(
