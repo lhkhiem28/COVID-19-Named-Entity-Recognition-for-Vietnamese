@@ -4,7 +4,7 @@ import torch
 import viet_text_tools as vtts
 from utils import *
 
-class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
+class Dataset(torch.utils.data.Dataset):
     def __init__(
         self, 
         df, 
@@ -41,13 +41,13 @@ class NamedEntityRecognitionDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         sent, anno = self.sents[idx], self.annos[idx]
-        sent, anno = tokenize(
-            self, 
-            sent, anno
-        ).values()
         sent, anno = pad_and_add_special_tokens(
             self, 
-            sent, anno
+            *tokenize(
+                self, 
+                sent, anno
+            ).values()
         ).values()
+        sent, anno = np.array(sent), np.array(anno)
 
-        return np.array(sent), np.array(anno)
+        return sent, anno

@@ -4,7 +4,7 @@ import yaml
 import pandas as pd
 import torch
 import transformers
-from data import NamedEntityRecognitionDataset
+from data import Dataset
 from engines import test_fn
 
 import warnings
@@ -19,7 +19,7 @@ data_file = yaml.load(open(args.data_file), Loader=yaml.FullLoader)
 hyps_file = yaml.load(open(args.hyps_file), Loader=yaml.FullLoader)
 
 test_loader = torch.utils.data.DataLoader(
-    NamedEntityRecognitionDataset(
+    Dataset(
         df=pd.read_csv(data_file["test_df_path"]), 
         tag_names=data_file["tag_names"], 
         tokenizer=transformers.AutoTokenizer.from_pretrained(hyps_file["model"], use_fast=False), 
