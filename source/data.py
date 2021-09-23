@@ -31,8 +31,8 @@ class Dataset(torch.utils.data.Dataset):
     def show_sent(self, idx):
         sent, anno = self.sents[idx], self.annos[idx]
         print("{:>40}: {}".format("word", "tag"))
-        for word, tag in zip(sent, anno):
-            print("{:>40}: {}".format(word, tag))
+        for i in range(len(sent)):
+            print("{:>40}: {}".format(sent[i], anno[i]))
 
     def __len__(self):
         dataset_len = len(self.df)

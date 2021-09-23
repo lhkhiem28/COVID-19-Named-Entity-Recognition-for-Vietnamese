@@ -131,23 +131,8 @@ def test_fn(
             annos, preds = list(annos.view(-1).detach().cpu().numpy()), list(np.argmax(logits.view(-1, logits.shape[-1]).detach().cpu().numpy(), axis=1))
             running_annos.extend(annos), running_preds.extend(preds)
 
-    test_micro_f1 = entity_f1_score(
-        np.array(running_annos), np.array(running_preds)
-        , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
-        , average="micro"
-    )
-    test_macro_f1 = entity_f1_score(
-        np.array(running_annos), np.array(running_preds)
-        , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
-        , average="macro"
-    )
-
     test_classification_report = entity_classification_report(
         np.array(running_annos), np.array(running_preds)
         , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
     )
-
-    print("{} - entity-micro-f1: {:.4f}".format("test", test_micro_f1))
-    print("{} - entity-macro-f1: {:.4f}".format("test", test_macro_f1))
-
     print("test - classification-report:\n", test_classification_report)
