@@ -22,14 +22,14 @@ test_loader = torch.utils.data.DataLoader(
     Dataset(
         df=pd.read_csv(data_file["test_df_path"]), 
         tag_names=data_file["tag_names"], 
-        tokenizer=transformers.AutoTokenizer.from_pretrained(hyps_file["model"], use_fast=False), 
+        tokenizer=transformers.AutoTokenizer.from_pretrained(hyps_file["encoder"], use_fast=False), 
     ), 
     num_workers=hyps_file["num_workers"], 
     batch_size=hyps_file["batch_size"]*2, 
 )
 
-model = transformers.RobertaForTokenClassification.from_pretrained(hyps_file["model"], num_labels=data_file["num_tags"])
-model.load_state_dict(torch.load("../ckps/{}.pt".format(hyps_file["model"].split("/")[-1]), map_location=torch.device(hyps_file["device"])))
+model = transformers.RobertaForTokenClassification.from_pretrained(hyps_file["encoder"], num_labels=data_file["num_tags"])
+model.load_state_dict(torch.load("../ckps/{}.pt".format(hyps_file["encoder"].split("/")[-1]), map_location=torch.device(hyps_file["device"])))
 
 test_fn(
     test_loader, model, torch.device(hyps_file["device"]), 

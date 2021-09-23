@@ -146,6 +146,7 @@ def test_fn(
         np.array(running_annos), np.array(running_preds)
         , test_loader.dataset.criterion_ignored_la, test_loader.dataset.tag_names
     )
+
     print("{} - entity-micro-f1: {:.4f}".format("test", test_micro_f1))
     print("{} - entity-macro-f1: {:.4f}".format("test", test_macro_f1))
 
