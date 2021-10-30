@@ -2,6 +2,7 @@
 
 ## 👋 **Introduction**
 A Pytorch replication of the paper [COVID-19 Named Entity Recognition for Vietnamese](https://arxiv.org/abs/2104.03879).\
+Visit my [HuggingFace page](https://huggingface.co/lhkhiem28/COVID-19-Named-Entity-Recognition-for-Vietnamese) for a demo.\
 My trained weights are available [here](https://drive.google.com/drive/folders/1oN2Mr44jwjNKxqUE2t2UgTlXWfXf6ojy?usp=sharing) and the results are shown in the following table:
 > <img src="imgs/results.png" width="600" />
 
